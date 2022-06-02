@@ -1,0 +1,529 @@
+---
+title: "Homework-5"
+author: "Sai Hruthik Reddy Varakantham-Dorababu Chintala-Abigna Gutta"
+date: '2022-04-23'
+output: word_document
+---
+## R Markdown
+```{r}
+####The Data Cleaning Part####
+#First Loading the data from the excel file into R and setting up the path
+pacman::p_load("pacman","tidyverse","rpart","rpart.plot","readxl")
+setwd("~/Desktop/Data_Mining/R-Files")
+
+#Dataset - Raw Data-Order and Sample
+OrderSample <- read_xlsx("Champo.xlsx",sheet = 2)
+
+#Dataset - Data Order ONLY 
+DataOrder <- read_xlsx("Champo.xlsx", sheet = 3)
+
+#Data on Sample ONLY
+DataOnSample<- read_xlsx("Champo.xlsx", sheet = 4)
+
+#Data for Recommendation
+DataForRecommendation <- read_xlsx("Champo.xlsx", sheet = 5)
+
+#Data for Clustering
+DataForClustering <- read_xlsx("Champo.xlsx",sheet = 6)
+
+#Data-Association Rules A-11
+AssociationRules <- read_xlsx("Champo.xlsx", sheet = 7)
+
+#Once our data is loaded we can now start cleaning our data and the way it is done is by replacing the NA values with the most occuring value in the column
+
+####Data Cleaning for Order Sample table####
+#Creating backup for Order Sample Dataset
+OrderSample2 <- OrderSample
+    #There are no outliers in OrderType, OrderCategory, CustomerCode,  CountryName, Custorderdate, UnitName
+  
+    #Converting values of categorical with character into factor format
+    OrderSample$OrderType<- as.factor(OrderSample$OrderType)
+    OrderSample$OrderCategory <- as.factor(OrderSample$OrderCategory)
+    OrderSample$CustomerCode <- as.factor(OrderSample$CustomerCode)
+    OrderSample$CountryName <- as.factor(OrderSample$CountryName)
+    OrderSample$UnitName <- as.factor(OrderSample$UnitName)
+    OrderSample$ITEM_NAME <- as.factor(OrderSample$ITEM_NAME)
+    OrderSample$QualityName <- as.factor(OrderSample$QualityName)
+    OrderSample$DesignName <- as.factor(OrderSample$DesignName)
+    OrderSample$ColorName <- as.factor(OrderSample$ColorName)
+    OrderSample$ShapeName <- as.factor(OrderSample$ShapeName)
+    
+    
+    
+    #Converting values of categorical with posix format into date format
+    OrderSample$Custorderdate <- as.Date(OrderSample$Custorderdate)
+    
+    #Removing Custorderdate as we are not getting the tree
+    OrderSample <- select(OrderSample,-c('Custorderdate'))
+    
+  #There are outliers in CustomerOrderNo
+
+        #Since there are a lot of values in CustomerOrderNo we do the following to extract most occuring value in our data
+      CON1<-OrderSample$CustomerOrderNo
+      sort(table(CON1), decreasing = T)[1:3] #By doing this we get the top 3 frequently occuring values in the column
+      
+      #the value "12985" has occured 114 times so we replace the NA values with it 
+      a3<-OrderSample$CustomerOrderNo
+      e3<-replace_na(a3,"12985")
+      OrderSample$CustomerOrderNo<-as.numeric(e3)
+      
+
+      
+####Data Cleaning for DataOrder table####
+      
+      sum(is.na(DataOrder))
+      
+      #There are no outliers in DataOrder table
+      
+      
+####Data Cleaning for DataOnSample table ####
+      
+      #There are about 273 outliers so we need to remove them 
+      
+#There are no outliers for the following values
+      DataOnSample$CustomerCode <- as.factor(DataOnSample$CustomerCode)
+      DataOnSample$CountryName <- as.factor(DataOnSample$CountryName)
+      
+      
+#There are outliers for the following values
+      #USA
+      sum(is.na(DataOnSample$USA))
+      table(DataOnSample$USA)
+      
+      
+      
+  #Since '0' has occured most no of times we consider replacing NA values with it
+      a4<-DataOnSample$USA
+      e4<-replace_na(a4,0)
+      DataOnSample$USA<-as.factor(e4)
+      
+  #UK
+      #Since '0' has occured most no of times we consider replacing NA values with it
+      
+      a5<-DataOnSample$UK
+      e5<-replace_na(a5,0)
+      DataOnSample$UK<-as.factor(e5)
+     
+      #Italy
+      #Since '0' has occured most no of times we consider replacing NA values with it 
+      
+      table(DataOnSample$Italy)
+      sum(is.na(DataOnSample$Italy))
+      a6<-DataOnSample$Italy
+      e6<-replace_na(a6,0)
+      DataOnSample$Italy<-as.factor(e6)
+      
+ 
+      #Belgium
+      #Since '0' has occured most no of times we consider replacing NA values with it 
+      
+      table(DataOnSample$Belgium)
+      sum(is.na(DataOnSample$Belgium))
+      a7<-DataOnSample$Belgium
+      e7<-replace_na(a7,0)
+      DataOnSample$Belgium<-as.factor(e7)
+      
+      
+      #Romania
+      #Since '0' has occured most no of times we consider replacing NA values with it 
+      
+      table(DataOnSample$Romania)
+      sum(is.na(DataOnSample$Romania))
+      a8<-DataOnSample$Romania
+      e8<-replace_na(a8,0)
+      DataOnSample$Romania<-as.factor(e8)
+      
+      
+      #Australia
+      #Since '0' has occured most no of times we consider replacing NA values with it 
+      
+      table(DataOnSample$Australia)
+      sum(is.na(DataOnSample$Australia))
+      a9<-DataOnSample$Australia
+      e9<-replace_na(a9,0)
+      DataOnSample$Australia<-as.factor(e9)
+      
+      #India
+      #Since '0' has occured most no of times we consider replacing NA values with it 
+      
+      table(DataOnSample$India)
+      sum(is.na(DataOnSample$India))
+      a10<-DataOnSample$India
+      e10<-replace_na(a10,0)
+      DataOnSample$India<-as.factor(e10)
+      
+      #QtyRequired
+      #No Outliers
+      
+      table(DataOnSample$QtyRequired)
+      sum(is.na(DataOnSample$QtyRequired))
+      
+      #item name
+      table(DataOnSample$ITEM_NAME)
+      sum(is.na(DataOnSample$ITEM_NAME))
+      
+      #Hand Tufted
+      table(DataOnSample$`Hand Tufted`)
+      sum(is.na(DataOnSample$`Hand Tufted`))
+      
+      #Durry
+      table(DataOnSample$Durry)
+      sum(is.na(DataOnSample$Durry))
+      
+      #Double back
+      table(DataOnSample$`Double Back`)
+      sum(is.na(DataOnSample$`Double Back`))
+      
+      #Hand Woven
+      table(DataOnSample$`Hand Woven`)
+      sum(is.na(DataOnSample$`Hand Woven`))
+      
+      #Knotted
+      table(DataOnSample$Knotted)
+      sum(is.na(DataOnSample$Knotted))
+      
+      #Jacquard
+      table(DataOnSample$Jacquard)
+      sum(is.na(DataOnSample$Jacquard))
+      
+      #Handloom
+      table(DataOnSample$Handloom)
+      sum(is.na(DataOnSample$Handloom))
+      
+      #Other
+      table(DataOnSample$Other)
+      sum(is.na(DataOnSample$Other))
+      
+      #Shape Name
+      table(DataOnSample$ShapeName)
+      sum(is.na(DataOnSample$ShapeName))
+      
+      #REC
+      table(DataOnSample$REC)
+      sum(is.na(DataOnSample$REC))
+      
+      #Round
+      table(DataOnSample$Round)
+      sum(is.na(DataOnSample$Round))
+      
+      #square
+      table(DataOnSample$Square)
+      sum(is.na(DataOnSample$Square))
+      
+      #areaft
+      table(DataOnSample$AreaFt)
+      sum(is.na(DataOnSample$AreaFt))
+      
+      #Order Conversion
+      table(DataOnSample$`Order Conversion`)
+      sum(is.na(DataOnSample$`Order Conversion`))
+      
+      
+      #Converting a few variables into factor so that it becomes easier for us to construct models
+      DataOnSample$ITEM_NAME <- as.factor(DataOnSample$ITEM_NAME)
+      DataOnSample$`Hand Tufted` <- as.factor(DataOnSample$`Hand Tufted`)
+      DataOnSample$Durry <- as.factor(DataOnSample$Durry)
+      DataOnSample$`Hand Woven` <- as.factor(DataOnSample$`Hand Woven`)
+      DataOnSample$Knotted <- as.factor(DataOnSample$Knotted)
+      DataOnSample$Jacquard <- as.factor(DataOnSample$Jacquard)
+      DataOnSample$Handloom <- as.factor(DataOnSample$Handloom)
+      DataOnSample$Other <- as.factor(DataOnSample$Other)
+      DataOnSample$ShapeName <- as.factor(DataOnSample$ShapeName)
+      DataOnSample$REC <- as.factor(DataOnSample$REC)
+      DataOnSample$Round <- as.factor(DataOnSample$Round)
+      DataOnSample$Square <- as.factor(DataOnSample$Square)
+      DataOnSample$`Order Conversion` <- as.factor(DataOnSample$`Order Conversion`)
+      DataOnSample$`Double Back` <- as.factor(DataOnSample$`Double Back`)
+
+```
+
+Question 1 : Providing key insights using EDA(Exploratory Data Analysis)
+
+```{r}
+
+####EDA for Order Sample####
+      
+      #Doing Chi-Square test for each of them Considering Order Type as the target variable
+      
+      chisq.test(OrderSample$OrderCategory,OrderSample$OrderType,correct = F) #Has a relation
+
+#similarly we did for all the other predictor varibales and the target variable and also we did for all the other variables in sample only dataset
+```
+
+Question 2: What kind of machine learning and analytics algortihms did you use (Theory)
+
+```{r}
+
+#The packages that we used 
+library(randomForest)
+library(varImp)
+library(caret)
+
+#Firstly we used decision tree to see which all customers can be recommended which kind of design and which sample can be suggested to the customer.
+
+#From the decision tree that we got in question  3 that the customers A-11, A-9, B-2, C-1,C-2 and so on until V-1 usually can be recommended samples with item names DOUBLE BACK, DURRY, HAND TUFTED,HANDLOOM, HANDWOVEN, JACQUARD . ALthough customers might have taken one of these items they can be recommended to have a higher chance of ordering the samples since Champo carpets have a very low order conversion rate of only 20 percent  
+
+#Random forest also allows us to know the most significant variables in our data
+
+```
+
+Question 3: Develop Machine Learning models such as decision tree, random forest
+```{r}
+#developing a decision tree for sample only to see the trends on which customer can be directed to a sample and which order is the best for which customer 
+####Decision Tree for DataonSample####
+      set.seed(122)
+      library(ISLR)
+      data(DataOnSample)
+      indx <- sample(2,nrow(DataOnSample),replace = TRUE,prob=c(0.7,0.3))
+      train <- DataOnSample[indx==1,]
+      test <- DataOnSample[indx==2,]
+      
+      library(rpart)
+      library(rpart.plot)
+      myFormula = `Order Conversion`~.
+      
+      
+      SampleonlyTree<- rpart(myFormula, data = train, control = rpart.control(minsplit = 14, minbucket = 10, maxdepth = 20, cp = 0.011), parms = list(split="gini"))
+      SampleonlyTree
+      
+      #Displaying it better
+      library(rpart.plot)
+      rpart.plot(SampleonlyTree)
+      
+      
+      
+
+```
+```{r}
+#random forest
+      Dupe<-DataOnSample
+      Dupe<-within(Dupe, rm('Hand Woven', 'Knotted','Handloom','Hand Tufted', 'Durry', 'Double Back'))
+```
+
+```{r}
+D<-sample(2, nrow(Dupe), prob = c(0.7,0.3),replace=TRUE)
+ind_train<-Dupe[D==1,]
+ind_test<-Dupe[D==2,]
+
+```
+
+```{r}
+summary(ind_train)
+#randomforest
+
+Data_forest<-randomForest(ind_train$`Order Conversion`~.,data = ind_train)
+print(Data_forest)
+
+
+```
+```{r}
+#entire values of variables
+Data_forest$importance
+varImpPlot(Data_forest)
+```
+The Most Significant variables in descending order of importance are AreaFt,CustomerCode,Item_Name, CountryName with the orders of 215,132,115 and 63 respectively 
+
+```{r}
+#view(ind_train)
+bestmtry<-tuneRF(ind_train, ind_train$`Order Conversion`, 
+                 stepFactor = 1.2, trace = TRUE, plot=TRUE)
+```
+```{r}
+#predictions
+pre_forest<-predict(Data_forest, newdata = ind_test, type="class")
+pre_forest
+
+```
+
+```{r}
+confusionMatrix(pre_forest,ind_test$`Order Conversion`)
+```
+#Accuracy of the model is 91.74%.
+```{r}
+
+library(stats)
+library(dplyr)
+library(ggplot2)
+library(ggfortify)
+
+```
+
+```{r}
+ DataRf<-Dupe
+      attach(DataRf)
+      # Step 1: Build Logit Model on Training Dataset
+      logitMod <- glm(`Order Conversion`~ShapeName+ITEM_NAME, family="binomial", data = ind_train)
+      summary(logitMod)
+
+```
+
+```{r}
+# Step 2: Predict variable Order Conversion on Test Data.
+      #response is used to predict function on the model, it gives log values.
+      pred <- predict(logitMod, ind_test, type="response") 
+      pred
+```
+
+```{r}
+#library(mlbench)
+     # data(DataRf, package="mlbench")
+      #B <- Data[complete.cases(Data), ]  
+      #str(B)
+      #glm(`Order Conversion`~CountryName, family="binomial", data = B)
+      #table(B$`Order Conversion`)
+```
+
+```{r}
+#predicting on the test data set "ind_test"
+      pr<-predict(logitMod, newdata=ind_test, type="response")
+      pr
+```
+
+```{r}
+#creating a "predicted_num" to create the "pr" prediction value greater than 0.5
+      predicted_num<-ifelse(pr>0.5, 1,0)
+      predicted_num
+      predicted_num<-factor(predicted_num, levels=c(0,1))
+      predicted_num
+      #accuracy of 82% which is proportion of 'predicted' that matches with the 'p'
+      p<-ind_test$`Order Conversion`
+      mean(predicted_num==p)
+```
+
+Question 4: Data Strategy for building customer segmentation using clustering
+```{r}
+#Data preprocessing involves cleaning, transformation and analysis of our given data in a lot of ways. Data Preprocessing on an unsupervised algorithm allows us to know the optimal number of clusters we can consider to get to the perfect match for a given customer since they can be linked to one cluster than the other. More the clusters we use to split the customer we observed that the association results dont seem to be very good.
+
+#The Customer segmentation can be done by dividing the customers belonging to one cluster might have similar buying patterns of the other customer belonging to the same cluster, hence other products(other than the items the customer has brought) can be suggested to one customer can be suggested to the other.
+
+
+```
+Question 5: Discuss the clustering algorithms that can be used for segmenting champo customers(Theory)
+```{r}
+#K-Means algorithm can be used for segmenting our customers but we need to make sure that there are no NA values in that and also that we get the best segmentation when number of clusters are not too low and not too high(i.e they are optimal in number).
+
+#K-Median can be used when there are a lot of outliers(i.e a lot of noise in our data) 
+
+#K-Mode is also a similar, an extension to the k-means algorithm for clustering large data with categorical values
+
+#All these Algorithms can be recommended only when there are such exceptions but predominantly we can use k-means algorithm as the best way of performing customer segmentation since we check all the measures like Euclidean distance, Manhattan or osine rule and then move centroids, we also do Silhoutte measure to study the serperation distance between our clusters, get optimal clusters and so on. So from this we conclude that K-Means clustering is best for segmenting our customers.
+```
+Question 6: Develop Customer Segmentation using k means clustering
+```{r}
+pacman::p_load("pacman","tidyverse","rpart","rpart.plot","readxl","base")
+library(scales)
+library(cluster)
+library(factoextra)
+#Data for Clustering
+#DataForClustering <- read_xlsx("Champo.xlsx",sheet = 6)
+
+
+
+#Checking for NA values in clustering dataset
+sum(is.na(DataForClustering))
+
+summary(DataForClustering)
+
+#getting our data 
+
+head(DataForClustering,n=6)
+str(DataForClustering)
+
+DataForClustering<-na.omit(DataForClustering)
+
+#Removing a column
+
+namesofrow <- DataForClustering$`Row Labels`
+rownames(DataForClustering) <- namesofrow
+DataForClustering <- DataForClustering[,-1]
+rownames(DataForClustering)<- namesofrow
+#DataForClustering$`Row Labels` <- as.factor(DataForClustering$`Row Labels`)
+#Normalizing our instances
+
+library(dplyr)
+myscale <- function(x) {
+  (x - min(x)) / (max(x) - min(x))
+}
+data <- DataForClustering %>% mutate_if(is.numeric, myscale)
+data
+
+#Using the k-means clustering to derive insights
+library(factoextra)
+km1 <- kmeans(data, centers = 6, nstart = 100)
+km1
+str(km1)
+      
+      
+
+```
+
+```{r}
+#Using fviz_cluster to show all the clusters
+fviz_cluster(km1, data = data)
+```
+
+
+```{r}
+set.seed(123)
+# function to compute total within-cluster sum of square
+wss <- function(k) {
+  kmeans(data, centers = k, nstart = 100)$tot.withinss
+}
+# Compute and plot wss for k = 1 to k = 15
+k.values <- 1:15
+
+library(tidyverse)
+wss_values <- map_dbl(k.values, wss)
+plot(k.values, wss_values,
+     type="b", pch = 19, frame = FALSE,
+     xlab="Number of clusters",
+     ylab="Total within-clusters sum of squares")
+```
+```{r}
+#To get the scree plot, we can also use the “fviz_nbclust” function.
+set.seed(123)
+fviz_nbclust(data, kmeans, method = "wss")
+```
+
+```{r}
+# function to compute average silhouette for k clusters
+library(cluster)
+avgsil <- function(k) {
+  kmModel <- kmeans(data, centers = k, nstart = 100)
+  ss <- silhouette(kmModel$cluster, dist(data))
+  mean(ss[, 3])
+}
+# Compute and plot wss for k = 2 to k = 15
+k.values <- 2:15
+# extract avg silhouette for 2-15 clusters
+avgsil_values <- map_dbl(k.values, avgsil)
+plot(k.values, avgsil_values,
+     type = "b", pch = 19, frame = FALSE,
+     xlab = "Number of clusters",
+     ylab = "Average Silhouettes")
+
+```
+
+```{r}
+#Similar to the elbow method, the “average silhoutte method” can be found in fviz_nbclust function.
+fviz_nbclust(data, kmeans, method = "silhouette")
+
+```
+```{r}
+data %>%
+    mutate(Cluster = km1$cluster) %>%
+    group_by(Cluster) %>%
+    summarise_all("mean")
+```
+
+
+
+Question 8: Provide Your Recommendations for Champo Carpets
+```{r}
+#By using Logistic Regression we derive that the Most Significant variables in descending order of importance are AreaFt,CustomerCode,Item_Name, CountryName with the orders of 215,132,115 and 63 respectively. These variables can help in increasing the conversion rate of champo carpets which is only 20 percent to bringing it closer to the imaginable 35 percent which is prevalent as mentioned in the case study.
+
+#By using K means clustering one can segment customers belonging to similar items brought.The distribution of customers into different clusters allows us to target the customers that belong to a similar customer segment and recommend them similar items.
+
+
+
+```
